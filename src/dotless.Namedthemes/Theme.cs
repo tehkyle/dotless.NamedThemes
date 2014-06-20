@@ -15,7 +15,7 @@ namespace dotless.NamedThemes
     {
         private Ruleset rules;
 
-        public void Load(Keyword themeName)
+        public void Load(string themeName)
         {
             var themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
             var themeBasePath = HttpContext.Current.Server.MapPath(themeBaseUrl);
@@ -43,11 +43,11 @@ namespace dotless.NamedThemes
             return ruleset;
         }
 
-        public Value GetColor(Keyword colorName)
+        public Value GetColor(string colorName)
         {
             var rule = rules.Rules
                 .OfType<Rule>()
-                .SingleOrDefault(a => a.Name == "@" + colorName.Value);
+                .SingleOrDefault(a => a.Name == "@" + colorName);
 
             if (rule == null)
             {

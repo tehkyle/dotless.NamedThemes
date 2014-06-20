@@ -28,9 +28,9 @@ namespace dotless.NamedThemes
             var colorName = Arguments[1] as Keyword;
 
             var theme = new Theme();
-            theme.Load(themeName);
+            theme.Load(themeName.Value);
 
-            return theme.GetColor(colorName);
+            return theme.GetColor(colorName.Value);
         }        
     }
 }
