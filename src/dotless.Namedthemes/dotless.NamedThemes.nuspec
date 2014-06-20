@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>1.0.0.1</version>
+    <version>1.0.0.3</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/stevecooperorg/dotless.NamedThemes</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>First version to NuGet.</releaseNotes>
+    <releaseNotes>Added a separate theme loader.</releaseNotes>
     <copyright>MIT License</copyright>
     <tags>dotless less css</tags>
   </metadata>

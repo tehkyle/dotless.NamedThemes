@@ -27,44 +27,10 @@ namespace dotless.NamedThemes
             var themeName = Arguments[0] as Keyword;
             var colorName = Arguments[1] as Keyword;
 
-            var themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
-            var themeBasePath =  HttpContext.Current.Server.MapPath(themeBaseUrl);
-            var themeBaseFile = Path.Combine(themeBasePath, themeName + ".less");
+            var theme = new Theme();
+            theme.Load(themeName);
 
-            Ruleset rules = GetCachedRuleset(themeBaseFile);
-
-            var rule = rules.Rules
-                .OfType<Rule>()
-                .SingleOrDefault(a => a.Name == "@" + colorName.Value);
-
-            if (rule == null)
-            {
-                return null;
-            }
-
-            return rule.Value;
-        }
-
-        private Ruleset GetCachedRuleset(string themeBaseFile)
-        {
-            var cacheKey = "dotless.namedtheme.basefile." + themeBaseFile;
-            var cache = HttpContext.Current.Cache;
-
-            var ruleset = cache[cacheKey] as Ruleset;
-            if (ruleset == null)
-            {
-
-                var themeFileContent = File.ReadAllText(themeBaseFile);
-
-                var parser = new dotless.Core.Parser.Parser();
-                ruleset = parser.Parse(themeFileContent, themeBaseFile);
-
-                cache.Insert(cacheKey, ruleset, new CacheDependency(themeBaseFile));
-            }
-
-            return ruleset;
-        }
-
-        
+            return theme.GetColor(colorName);
+        }        
     }
 }
