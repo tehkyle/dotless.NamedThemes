@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Caching;
 using dotless.Core.Parser.Functions;
 using dotless.Core.Parser.Infrastructure;
 using dotless.Core.Parser.Infrastructure.Nodes;
@@ -30,16 +31,11 @@ namespace dotless.NamedThemes
             var themeBasePath =  HttpContext.Current.Server.MapPath(themeBaseUrl);
             var themeBaseFile = Path.Combine(themeBasePath, themeName + ".less");
 
-            var themeFileContent = File.ReadAllText(themeBaseFile);
-
-            var parser = new dotless.Core.Parser.Parser();
-            Ruleset rules = parser.Parse(themeFileContent, themeBaseFile);
+            Ruleset rules = GetCachedRuleset(themeBaseFile);
 
             var rule = rules.Rules
                 .OfType<Rule>()
                 .SingleOrDefault(a => a.Name == "@" + colorName.Value);
-
-            Debugger.Break();
 
             if (rule == null)
             {
@@ -48,5 +44,27 @@ namespace dotless.NamedThemes
 
             return rule.Value;
         }
+
+        private Ruleset GetCachedRuleset(string themeBaseFile)
+        {
+            var cacheKey = "dotless.namedtheme.basefile." + themeBaseFile;
+            var cache = HttpContext.Current.Cache;
+
+            var ruleset = cache[cacheKey] as Ruleset;
+            if (ruleset == null)
+            {
+
+                var themeFileContent = File.ReadAllText(themeBaseFile);
+
+                var parser = new dotless.Core.Parser.Parser();
+                ruleset = parser.Parse(themeFileContent, themeBaseFile);
+
+                cache.Insert(cacheKey, ruleset, new CacheDependency(themeBaseFile));
+            }
+
+            return ruleset;
+        }
+
+        
     }
 }
