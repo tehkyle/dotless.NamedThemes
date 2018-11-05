@@ -6,7 +6,13 @@
 @theme-nav-bar-bg-color:getThemeColor(@theme,theme-nav-bar-bg-color);
 @theme-link-color:getThemeColor(@theme,theme-link-color);
 
-body { 
-  color: @theme-base-color;
-  background-color: @theme-nav-bar-bg-color; 
+body {
+	color: @theme-base-color;
+	background-color: @theme-nav-bar-bg-color;
+
+	div {
+		width: 200px;
+		height: 150px;
+		background-color: lighten(@theme-base-color, 60%);
+	}
 }

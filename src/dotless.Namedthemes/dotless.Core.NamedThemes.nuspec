@@ -2,12 +2,12 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>1.0.0.5</version>
+    <version>1.0</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
-    <licenseUrl>https://github.com/stevecooperorg/dotless.NamedThemes/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/stevecooperorg/dotless.NamedThemes</projectUrl>
+    <licenseUrl>https://github.com/tehkyle/dotless.NamedThemes/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/tehkyle/dotless.NamedThemes</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes>Added a separate theme loader.</releaseNotes>

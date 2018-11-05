@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotless.NamedThemes", "dotless.Namedthemes\dotless.NamedThemes.csproj", "{C834A8FE-07AE-4B0C-9C92-5029C281A531}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotless.Core.NamedThemes", "dotless.Namedthemes\dotless.Core.NamedThemes.csproj", "{C834A8FE-07AE-4B0C-9C92-5029C281A531}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotless.NamedThemes.SampleSite", "dotless.NamedThemes.SampleSite\dotless.NamedThemes.SampleSite.csproj", "{4B7B6CB7-0708-4F20-9EDC-6180730E6F19}"
 EndProject
@@ -31,5 +31,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4E9B6FA9-D538-479B-8965-2CDF16587361}
 	EndGlobalSection
 EndGlobal

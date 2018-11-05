@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("dotless.Namedthemes")]
-[assembly: AssemblyDescription("named themes plugin for dotless")]
+[assembly: AssemblyTitle("dotless.Core.NamedThemes")]
+[assembly: AssemblyDescription("Named themes plugin for dotless upgraded from Steve Cooper's repo")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("By Steve Cooper")]
-[assembly: AssemblyProduct("dotless.Namedthemes")]
+[assembly: AssemblyCompany("Kyle Levien")]
+[assembly: AssemblyProduct("dotless.Core.NamedThemes")]
 [assembly: AssemblyCopyright("MIT License")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("de5e9a3b-460e-4552-8b0e-c28b48860263")]
+[assembly: Guid("8DC8D7AE-1BE5-417F-B7D6-DC0357A41E8C")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,4 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.1")]
-[assembly: AssemblyFileVersion("1.0.0.1")]
+[assembly: AssemblyVersion("1.0.*")]
