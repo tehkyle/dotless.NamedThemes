@@ -17,8 +17,10 @@ namespace dotless.NamedThemes
 
         public void Load(string themeName)
         {
-            var themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
-            var themeBasePath = HttpContext.Current.Server.MapPath(themeBaseUrl);
+            var themeBaseUrl = ConfigurationManager.AppSettings["dotless.Core.NamedThemes:ThemeBaseUrl"];
+			if (string.IsNullOrEmpty(themeBaseUrl))
+				themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
+			var themeBasePath = HttpContext.Current.Server.MapPath(themeBaseUrl);
             var themeBaseFile = Path.Combine(themeBasePath, themeName + ".less");
 
             this.rules = GetCachedRuleset(themeBaseFile);

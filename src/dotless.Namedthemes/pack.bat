@@ -1,2 +1,2 @@
 del *.nupkg
-nuget pack dotless.NamedThemes.csproj -Prop Configuration=Debug
+nuget pack dotless.Core.NamedThemes.csproj -Prop Configuration=Release
