@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -22,8 +23,29 @@ namespace dotless.NamedThemes
 				themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
 			var themeBasePath = HttpContext.Current.Server.MapPath(themeBaseUrl);
             var themeBaseFile = Path.Combine(themeBasePath, themeName + ".less");
+            var themeUri = new Uri(themeBaseUrl + "?id=" + themeName);
+            if (File.Exists(themeBaseFile))
+                this.rules = GetCachedRuleset(themeBaseFile);
+            else
+                this.rules = GetCachedRuleset(new Uri(themeBaseUrl + themeName));
+        }
 
-            this.rules = GetCachedRuleset(themeBaseFile);
+        private string GetCacheContent(Uri themeUri)
+        {
+            using (WebClient client = new WebClient())
+                return client.DownloadString(themeUri);
+        }
+
+        private Ruleset GetCachedRuleset(Uri themeUri)
+        {
+            string themeContent;
+            using (WebClient client = new WebClient())
+                themeContent = client.DownloadString(themeUri);
+
+            var parser = new dotless.Core.Parser.Parser();
+            Ruleset ruleset = parser.Parse(themeContent, themeUri.ToString());
+
+            return ruleset;
         }
 
         private Ruleset GetCachedRuleset(string themeBaseFile)
