@@ -23,20 +23,17 @@ namespace dotless.NamedThemes
 				themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
 			var themeBasePath = HttpContext.Current.Server.MapPath(themeBaseUrl);
             var themeBaseFile = Path.Combine(themeBasePath, themeName + ".less");
-            var themeUri = new Uri(themeBaseUrl + "?id=" + themeName);
+            var themeRelativeUri = themeBaseUrl + "?id=" + themeName;
             if (File.Exists(themeBaseFile))
-                this.rules = GetCachedRuleset(themeBaseFile);
+                this.rules = GetCachedRulesetFromFile(themeBaseFile);
             else
-                this.rules = GetCachedRuleset(new Uri(themeBaseUrl + themeName));
+            {
+                var themeUri = new Uri(HttpContext.Current.Request.Url, themeRelativeUri);
+                this.rules = GetCachedRulesetFromUri(themeUri);
+            }
         }
 
-        private string GetCacheContent(Uri themeUri)
-        {
-            using (WebClient client = new WebClient())
-                return client.DownloadString(themeUri);
-        }
-
-        private Ruleset GetCachedRuleset(Uri themeUri)
+        private Ruleset GetCachedRulesetFromUri(Uri themeUri)
         {
             string themeContent;
             using (WebClient client = new WebClient())
@@ -48,7 +45,7 @@ namespace dotless.NamedThemes
             return ruleset;
         }
 
-        private Ruleset GetCachedRuleset(string themeBaseFile)
+        private Ruleset GetCachedRulesetFromFile(string themeBaseFile)
         {
             var cacheKey = "dotless.namedtheme.basefile." + themeBaseFile;
             var cache = HttpContext.Current.Cache;
