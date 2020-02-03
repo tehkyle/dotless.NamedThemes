@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
 using dotless.Core.Parser.Tree;
@@ -16,6 +13,11 @@ namespace dotless.NamedThemes
     {
         private Ruleset rules;
 
+        private string BaseUrl => 
+            HttpContext.Current.Request.Url.Scheme + "://" + 
+            HttpContext.Current.Request.Url.Authority + 
+            HttpContext.Current.Request.ApplicationPath.TrimEnd('/') + "/";
+
         public void Load(string themeName)
         {
             var themeBaseUrl = ConfigurationManager.AppSettings["dotless.Core.NamedThemes:ThemeBaseUrl"];
@@ -23,13 +25,23 @@ namespace dotless.NamedThemes
 				themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
 			var themeBasePath = HttpContext.Current.Server.MapPath(themeBaseUrl);
             var themeBaseFile = Path.Combine(themeBasePath, themeName + ".less");
-            var themeRelativeUri = themeBaseUrl + "?id=" + themeName;
-            if (File.Exists(themeBaseFile))
-                this.rules = GetCachedRulesetFromFile(themeBaseFile);
-            else
+            var themeRelativeUri = themeBaseUrl.TrimStart('~').TrimStart('/') + "?id=" + themeName;
+
+            var cacheKey = "dotless.namedtheme.basefile." + themeName;
+            var cache = HttpContext.Current.Cache;
+            rules = cache[cacheKey] as Ruleset;
+
+            if (rules == null)
             {
-                var themeUri = new Uri(HttpContext.Current.Request.Url, themeRelativeUri);
-                this.rules = GetCachedRulesetFromUri(themeUri);
+                if (File.Exists(themeBaseFile))
+                    rules = GetCachedRulesetFromFile(themeBaseFile);
+                else
+                {
+                    var themeUri = new Uri(BaseUrl + themeRelativeUri);
+                    rules = GetCachedRulesetFromUri(themeUri);
+                }
+
+                cache.Insert(cacheKey, rules, new CacheDependency(themeBaseFile));
             }
         }
 
@@ -40,28 +52,15 @@ namespace dotless.NamedThemes
                 themeContent = client.DownloadString(themeUri);
 
             var parser = new dotless.Core.Parser.Parser();
-            Ruleset ruleset = parser.Parse(themeContent, themeUri.ToString());
-
-            return ruleset;
+            return parser.Parse(themeContent, themeUri.ToString());
         }
 
         private Ruleset GetCachedRulesetFromFile(string themeBaseFile)
         {
-            var cacheKey = "dotless.namedtheme.basefile." + themeBaseFile;
-            var cache = HttpContext.Current.Cache;
+            var themeFileContent = File.ReadAllText(themeBaseFile);
 
-            var ruleset = cache[cacheKey] as Ruleset;
-            if (ruleset == null)
-            {
-                var themeFileContent = File.ReadAllText(themeBaseFile);
-
-                var parser = new dotless.Core.Parser.Parser();
-                ruleset = parser.Parse(themeFileContent, themeBaseFile);
-
-                cache.Insert(cacheKey, ruleset, new CacheDependency(themeBaseFile));
-            }
-
-            return ruleset;
+            var parser = new dotless.Core.Parser.Parser();
+            return parser.Parse(themeFileContent, themeBaseFile);
         }
 
         public Value GetColor(string colorName)
