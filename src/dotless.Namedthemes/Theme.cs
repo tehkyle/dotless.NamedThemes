@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,7 +24,12 @@ namespace dotless.NamedThemes
             var themeBaseUrl = ConfigurationManager.AppSettings["dotless.Core.NamedThemes:ThemeBaseUrl"];
 			if (string.IsNullOrEmpty(themeBaseUrl))
 				themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
-			var themeBasePath = HttpContext.Current.Server.MapPath(themeBaseUrl);
+
+            var themeRelBasePath = ConfigurationManager.AppSettings["dotless.Core.NamedThemes:ThemeBasePath"];
+            if (string.IsNullOrEmpty(themeRelBasePath))
+                themeRelBasePath = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBasePath"];
+
+            var themeBasePath = HttpContext.Current.Server.MapPath(themeRelBasePath);
             var themeBaseFile = Path.Combine(themeBasePath, themeName + ".less");
             var themeRelativeUri = themeBaseUrl.TrimStart('~').TrimStart('/') + "?id=" + themeName;
 
@@ -33,15 +39,21 @@ namespace dotless.NamedThemes
 
             if (rules == null)
             {
-                if (File.Exists(themeBaseFile))
-                    rules = GetCachedRulesetFromFile(themeBaseFile);
-                else
+                try
                 {
                     var themeUri = new Uri(BaseUrl + themeRelativeUri);
                     rules = GetCachedRulesetFromUri(themeUri);
-                }
 
-                cache.Insert(cacheKey, rules, new CacheDependency(themeBaseFile));
+                    if (rules != null)
+                        cache.Insert(cacheKey, rules, new CacheDependency(themeBaseFile));
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e.ToString());
+                    if (!File.Exists(themeBaseFile))
+                        themeBaseFile = Directory.EnumerateFiles(themeBasePath, "*.less").OrderByDescending(t => t.Contains("seattleTheme.less")).FirstOrDefault() ?? Path.Combine(themeBasePath, "seattleTheme.less"); // IGX-dependant hardcode fallback.
+                    rules = GetCachedRulesetFromFile(themeBaseFile);
+                }
             }
         }
 
