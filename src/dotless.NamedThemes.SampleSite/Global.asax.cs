@@ -1,5 +1,6 @@
 using System;
 using System.Web;
+using System.Web.Hosting;
 
 namespace dotless.NamedThemes.SampleSite
 {
@@ -9,11 +10,15 @@ namespace dotless.NamedThemes.SampleSite
         {
             NamedThemesConfig.Options = new NamedThemesOptions
             {
-                ThemeBasePath = Server.MapPath("~/Content/Themes/"),
-                ThemeBaseUrl  = "/Content/Themes/"
-                // ApplicationBaseUrl: set this to enable URI-based theme loading,
-                // e.g. $"{Request.Url.Scheme}://{Request.Url.Authority}/"
-                // Leave unset to use filesystem loading only.
+                ThemeBasePath    = HostingEnvironment.MapPath("~/Content/Themes/"),
+                ThemeBaseUrl     = "/Content/Themes/",
+                ApplicationBaseUrl = () =>
+                {
+                    var req = HttpContext.Current?.Request;
+                    return req != null
+                        ? $"{req.Url.Scheme}://{req.Url.Authority}{req.ApplicationPath.TrimEnd('/')}/"
+                        : null;
+                }
             };
         }
     }

@@ -31,12 +31,13 @@ namespace dotless.NamedThemes
             if (rules != null)
                 return;
 
-            if (!string.IsNullOrEmpty(themeBaseUrl) && !string.IsNullOrEmpty(options.ApplicationBaseUrl))
+            var applicationBaseUrl = options.ApplicationBaseUrl?.Invoke();
+            if (!string.IsNullOrEmpty(themeBaseUrl) && !string.IsNullOrEmpty(applicationBaseUrl))
             {
                 try
                 {
                     var relativeUri = themeBaseUrl.TrimStart('~').TrimStart('/') + "?id=" + themeName;
-                    var themeUri = new Uri(options.ApplicationBaseUrl.TrimEnd('/') + "/" + relativeUri);
+                    var themeUri = new Uri(applicationBaseUrl.TrimEnd('/') + "/" + relativeUri);
                     rules = GetRulesetFromUri(themeUri);
 
                     if (rules != null)

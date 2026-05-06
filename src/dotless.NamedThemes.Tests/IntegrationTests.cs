@@ -53,9 +53,15 @@ namespace dotless.NamedThemes.Tests
         /// <code>
         /// NamedThemesConfig.Options = new NamedThemesOptions
         /// {
-        ///     ThemeBasePath      = Server.MapPath("~/Content/Themes/"),
-        ///     ThemeBaseUrl       = ConfigurationManager.AppSettings["dotless.Core.NamedThemes:ThemeBaseUrl"],
-        ///     ApplicationBaseUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}{Request.ApplicationPath.TrimEnd('/')}/"
+        ///     ThemeBasePath      = HostingEnvironment.MapPath("~/Content/Themes/"),
+        ///     ThemeBaseUrl       = "/Content/Themes/",
+        ///     ApplicationBaseUrl = () =>
+        ///     {
+        ///         var req = HttpContext.Current?.Request;
+        ///         return req != null
+        ///             ? $"{req.Url.Scheme}://{req.Url.Authority}{req.ApplicationPath.TrimEnd('/')}/"
+        ///             : null;
+        ///     }
         /// };
         /// </code>
         /// </summary>

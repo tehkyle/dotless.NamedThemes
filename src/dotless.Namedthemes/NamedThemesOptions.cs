@@ -1,3 +1,5 @@
+using System;
+
 namespace dotless.NamedThemes
 {
     public class NamedThemesOptions
@@ -15,9 +17,10 @@ namespace dotless.NamedThemes
         public string ThemeBasePath { get; set; }
 
         /// <summary>
-        /// Base URL of the host application, e.g. "https://myapp.com/".
+        /// Factory that returns the base URL of the host application, e.g. "https://myapp.com/".
+        /// Evaluated per-request so Framework apps can read from <c>HttpContext.Current.Request</c>.
         /// Required for URI-based theme loading. If not set, loading falls back to <see cref="ThemeBasePath"/>.
         /// </summary>
-        public string ApplicationBaseUrl { get; set; }
+        public Func<string> ApplicationBaseUrl { get; set; }
     }
 }
