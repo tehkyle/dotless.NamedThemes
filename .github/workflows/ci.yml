@@ -10,6 +10,9 @@ on:
 jobs:
   build-and-test:
     runs-on: windows-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -33,6 +36,14 @@ jobs:
         with:
           name: test-results
           path: ./TestResults/*.trx
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: xUnit Tests
+          path: ./TestResults/*.trx
+          reporter: dotnet-trx
 
   pack-and-publish:
     needs: build-and-test
