@@ -173,3 +173,15 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 *.nupkg
+
+# VS files
+/**/.vs/
+
+# VSCode
+.vscode/
+
+# Local launch profiles (developer-specific IIS Express / dotnet run settings)
+**/Properties/launchSettings.json
+
+# Old-style NuGet restore (not needed with SDK-style projects)
+.nuget/

@@ -1,94 +1,102 @@
-﻿using System;
-using System.Configuration;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Web;
-using System.Web.Caching;
+using System.Net.Http;
+using System.Runtime.Caching;
 using dotless.Core.Parser.Tree;
 
 namespace dotless.NamedThemes
 {
     public class Theme
     {
-        private Ruleset rules;
+        private static readonly HttpClient HttpClient = new HttpClient();
 
-        private string BaseUrl => 
-            HttpContext.Current.Request.Url.Scheme + "://" + 
-            HttpContext.Current.Request.Url.Authority + 
-            HttpContext.Current.Request.ApplicationPath.TrimEnd('/') + "/";
+        private Ruleset rules;
 
         public void Load(string themeName)
         {
-            var themeBaseUrl = ConfigurationManager.AppSettings["dotless.Core.NamedThemes:ThemeBaseUrl"];
-			if (string.IsNullOrEmpty(themeBaseUrl))
-				themeBaseUrl = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBaseUrl"];
+            var options = NamedThemesConfig.Options;
+            var themeBasePath = options.ThemeBasePath;
+            var themeBaseUrl = options.ThemeBaseUrl;
 
-            var themeRelBasePath = ConfigurationManager.AppSettings["dotless.Core.NamedThemes:ThemeBasePath"];
-            if (string.IsNullOrEmpty(themeRelBasePath))
-                themeRelBasePath = ConfigurationManager.AppSettings["dotless.NamedThemes:ThemeBasePath"];
-
-            var themeBasePath = HttpContext.Current.Server.MapPath(themeRelBasePath);
-            var themeBaseFile = Path.Combine(themeBasePath, themeName + ".less");
-            var themeRelativeUri = themeBaseUrl.TrimStart('~').TrimStart('/') + "?id=" + themeName;
+            var themeBaseFile = !string.IsNullOrEmpty(themeBasePath)
+                ? Path.Combine(themeBasePath, themeName + ".less")
+                : null;
 
             var cacheKey = "dotless.namedtheme.basefile." + themeName;
-            var cache = HttpContext.Current.Cache;
+            var cache = MemoryCache.Default;
             rules = cache[cacheKey] as Ruleset;
 
-            if (rules == null)
+            if (rules != null)
+                return;
+
+            if (!string.IsNullOrEmpty(themeBaseUrl) && !string.IsNullOrEmpty(options.ApplicationBaseUrl))
             {
                 try
                 {
-                    var themeUri = new Uri(BaseUrl + themeRelativeUri);
-                    rules = GetCachedRulesetFromUri(themeUri);
+                    var relativeUri = themeBaseUrl.TrimStart('~').TrimStart('/') + "?id=" + themeName;
+                    var themeUri = new Uri(options.ApplicationBaseUrl.TrimEnd('/') + "/" + relativeUri);
+                    rules = GetRulesetFromUri(themeUri);
 
                     if (rules != null)
-                        cache.Insert(cacheKey, rules, new CacheDependency(themeBaseFile));
+                    {
+                        var policy = BuildCachePolicy(themeBaseFile);
+                        cache.Set(cacheKey, rules, policy);
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {
                     Trace.WriteLine(e.ToString());
-                    if (!File.Exists(themeBaseFile))
-                        themeBaseFile = Directory.EnumerateFiles(themeBasePath, "*.less").OrderByDescending(t => t.Contains("seattleTheme.less")).FirstOrDefault() ?? Path.Combine(themeBasePath, "seattleTheme.less"); // IGX-dependant hardcode fallback.
-                    rules = GetCachedRulesetFromFile(themeBaseFile);
                 }
+            }
+
+            // File fallback
+            if (themeBaseFile != null && !string.IsNullOrEmpty(themeBasePath))
+            {
+                if (!File.Exists(themeBaseFile))
+                    themeBaseFile = Directory.EnumerateFiles(themeBasePath, "*.less")
+                        .OrderByDescending(t => t.Contains("seattleTheme.less"))
+                        .FirstOrDefault()
+                        ?? Path.Combine(themeBasePath, "seattleTheme.less");
+
+                rules = GetRulesetFromFile(themeBaseFile);
+
+                if (rules != null)
+                    cache.Set(cacheKey, rules, BuildCachePolicy(themeBaseFile));
             }
         }
 
-        private Ruleset GetCachedRulesetFromUri(Uri themeUri)
+        private static CacheItemPolicy BuildCachePolicy(string filePath)
         {
-            string themeContent;
-            using (WebClient client = new WebClient())
-                themeContent = client.DownloadString(themeUri);
+            var policy = new CacheItemPolicy();
+            if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                policy.ChangeMonitors.Add(new HostFileChangeMonitor(new[] { filePath }));
+            return policy;
+        }
 
+        private static Ruleset GetRulesetFromUri(Uri themeUri)
+        {
+            var themeContent = HttpClient.GetStringAsync(themeUri).GetAwaiter().GetResult();
             var parser = new dotless.Core.Parser.Parser();
             return parser.Parse(themeContent, themeUri.ToString());
         }
 
-        private Ruleset GetCachedRulesetFromFile(string themeBaseFile)
+        private static Ruleset GetRulesetFromFile(string themeBaseFile)
         {
             var themeFileContent = File.ReadAllText(themeBaseFile);
-
             var parser = new dotless.Core.Parser.Parser();
             return parser.Parse(themeFileContent, themeBaseFile);
         }
 
         public Value GetColor(string colorName)
         {
-            var rule = rules.Rules
+            var rule = rules?.Rules
                 .OfType<Rule>()
                 .SingleOrDefault(a => a.Name == "@" + colorName);
 
-            if (rule == null)
-            {
-                return null;
-            }
-
-            var color = rule.Value as dotless.Core.Parser.Tree.Value;
-
-            return color;
+            return rule?.Value as dotless.Core.Parser.Tree.Value;
         }
     }
 }
